@@ -27,7 +27,6 @@ int main(int args, char* argv[]) {
 		case '1': { // linked list
 
 			node* head = NULL;
-			node* prev, *temp;
 			char* keys[] = {"key0", "key1", "key2", "key3"};
 			int values[] = {0, 1, 2, 3};
 			
@@ -38,13 +37,7 @@ int main(int args, char* argv[]) {
 
 			// print list
 			printf("Appends Completed:\n\n");
-			printf("  key | value\n");
-			printf("------+--------\n");
-			temp = head;
-			while (temp != NULL) {
-				printf(" %s | %d\n", temp->key, temp->value);
-				temp = temp->link;
-			}
+			NODE_printlist(head);
 
 			// removes
 			for (int i=0; i<4; i+=2) {
@@ -53,19 +46,19 @@ int main(int args, char* argv[]) {
 
 			// print list
 			printf("\nRemoves Completed:\n\n");
-			printf("  key | value\n");
-			printf("------+--------\n");
-			temp = head;
-			while (temp != NULL) {
-				printf(" %s | %d\n", temp->key, temp->value);
-				prev = temp;
-				temp = temp->link;
-				free(prev);
-			}
+			NODE_printlist(head);
+
+			// free list
+			printf("\nFreeing List\n");
+			NODE_freelist(head);
+
 			break;
 		}
 
-		case '2': {// set
+		case '2': { // set
+			dict* ht = HT_init();
+
+			HT_set(ht, "Hello World!", 42);
 
 			break;
 		}
