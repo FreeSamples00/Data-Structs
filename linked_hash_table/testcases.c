@@ -1,7 +1,5 @@
 #include "linked_hash_table.h"
 
-// Test functions here
-
 int main(int args, char* argv[]) {
 	int c;
 
@@ -13,8 +11,8 @@ int main(int args, char* argv[]) {
 	
 		printf("Test cases:\n");
 		printf("\t1. Linked list\n");
-		printf("\t2. Hash table set\n");
-		printf("\t3. Hash table set + remove\n");
+		printf("\t2. Hash table set + retrieve\n");
+		printf("\t3. Hash table set + remove + retrieve\n");
 		printf("\t4. Hash collision\n");
 		printf("\nEnter choice: ");
 		c = getchar();
@@ -55,26 +53,61 @@ int main(int args, char* argv[]) {
 			break;
 		}
 
-		case '2': { // set
-			dict* ht = HT_init();
+		case '2': { // set + retrieve
+			char* key = "Hello World!";
+			int value = 42;
 
-			HT_set(ht, "Hello World!", 42);
+
+			// initialize hash table
+			dict* ht = HT_init();
+			printf("Hashtable created\n");
+
+			// set some keyvalue pairs
+			HT_set(ht, key, value);
+			printf("Set '%s' to %d\n", key, value);
+
+			// retrieve and print a value
+			printf("Retrieved %d from '%s'\n", HT_get(ht, key), key);
+
+			// TODO: free table + lists
 
 			break;
 		}
 
-		case '3': { // set + remove
+		case '3': { // set + remove + retrieve
 
 			break;
 		}
 
 		case '4': { // hash collision
+			char* keys[] = {"d", "dddddddddd>>"};
+			int values[] = {1, 2};
+
+			// initialize hashtable
+			dict* ht = HT_init();
+			printf("Hashtable created\n");
+
+			// set key-value pairs
+			printf("\nSetting key-value pairs\n");
+			for (int i=0; i<2; i++) {
+				HT_set(ht, keys[i], values[i]);
+				printf("Set '%s' to %d\n", keys[i], values[i]);
+			}
+
+			// retrieve set key-value pairs
+			printf("\nRetrieving keys\n");
+			for (int i=0; i<2; i++) {
+				printf("Retrieved %d from '%s'\n", HT_get(ht, keys[i]), keys[i]);
+			}
+
+			// TODO: free tables
 
 			break;
 		}
 
 		default: {
-			printf("Invalid test case: %c\n", c);
+			printf("Invalid test case: '%c'\n", c);
+			printf("\n ====== TEST END ======\n\n");
 			return 1;
 		}
 	}

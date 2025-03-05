@@ -33,11 +33,12 @@ typedef struct hash_table {
 // ====== DECLARATIONS ======
 
 int HT_set(dict* ht, char* key, int value);
-int HT_clear(dict* ht, char* key);
-int HT_retrieve(dict* ht, char* key);
-ndode* HT_getdata(dict* ht);
+int HT_remove(dict* ht, char* key);
+int HT_get(dict* ht, char* key);
+node* HT_getpairs(dict* ht);
 dict* HT_init(void);
 int HT_hash(char* key);
+int HT_free(dict* ht);
 
 node* NODE_init(char* key, int value);
 node* NODE_append(node* head, node* end);
@@ -50,6 +51,7 @@ int NODE_printlist(node* head);
 
 // ====== hashtable methods ======
 
+// initialize hash table
 dict* HT_init(void) {
 
 	dict* ht = malloc(sizeof(dict));
@@ -65,27 +67,72 @@ dict* HT_init(void) {
 	return ht;
 }
 
+// set a key to a value in the hashtable
 int HT_set(dict* ht, char* key, int value) {
+	node* head;
+	node* temp;
 
-	// TODO: if key absent create key/value pair, else change existing value
+	// handle key that's too long
+	if (strlen(key) > MAX_KEY_LEN) {
+		printf("\033[33mERROR: key too long.\n\tkey:  '%s'\n\tmax length: %d\033[0m\n", key, MAX_KEY_LEN);
+		exit(1);
+	}
+
+	// hash the key
+	int index = HT_hash(key);
+
+	// check for key existence (if it does, change it on the spot)
+	head = ht->table[index];
+	if (head != NULL) {
+		temp = head;
+		while (temp != NULL) {
+			
+			if (!strcmp(temp->key, key)) {
+				temp->value = value;
+				return 0;
+			}
+
+			temp = temp->link;
+		}
+	}
+
+	// append key-value pair to hashtable
+	temp = NODE_init(key, value);
+	ht->table[index] = NODE_append(head, temp);
 
 	return 0;
 }
 
-int HT_clear(dict* ht, char* key) {
+// remove a key-value pair from hashtable
+int HT_remove(dict* ht, char* key) {
 
 	// TODO: remove key/value pair
 
 	return 0;
 }
 
-int HT_retrieve(dict* ht, char* key) {
+// retrieve a value from hashtable using key
+int HT_get(dict* ht, char* key) {
 
-	// TODO
+	// hash key
+	int index = HT_hash(key);
 
-	return 0;
+	// find key in table to return
+	node* head = ht->table[index];
+	while (head != NULL) {
+		if (!strcmp(head->key, key)) {
+			return head->value;
+		}
+		head = head->link;
+	}
+
+	// if not present, keyerror
+	printf("ERROR: key %s not found\n", key);
+	exit(1);
+	return -1;
 }
 
+// hash key into an index in the hashtable
 int HT_hash(char* key) {
 
 	unsigned long loc = 0;
@@ -97,24 +144,38 @@ int HT_hash(char* key) {
 	return loc % TABLE_SIZE;
 }
 
-node* HT_getdata(dict* ht) {
+// gets a linked list of all data stored in hash table
+node* HT_getpairs(dict* ht) {
 
 	/* TODO: 
-		- finds all stored keyvalue pairs
+		- finds all stored key-value pairs
 		- strings themm together
 		- returns them as a linkedlist
 	*/
 
+	return NULL;
+
+}
+
+// free hashtable and its internal structs
+int HT_free(dict* ht) {
+
+	// TODO: free all linked lists, then free ht itself
+
+	return 1;
 }
 
 
 // ====== node methods ======
 
+// initalize linked node w/ key-value data
 node* NODE_init(char* key, int value) {
 
+	// create memory space for node
 	node* n = malloc(sizeof(node));
 	if (n == NULL) {exit(1);}
 
+	// store data in node
 	strncpy(n->key, key, strlen(key));
 	n->value = value;
 	n->link = NULL;
@@ -122,22 +183,30 @@ node* NODE_init(char* key, int value) {
 	return n;
 }
 
+// append node to a linked list
 node* NODE_append(node* head, node* n) {
 
+	// if list is empty
 	if (head == NULL) {
 		return n;
 	}
+
+	// iterate through list
 	node* temp = head;
 	while (temp->link != NULL) {
 		temp = temp->link;
 	}
+
+	// add node to end
 	temp->link = n;
+
 	return head;
 }
 
+// remove node from a linked list
 node* NODE_remove(node* head, char* key) {
 
-	if (head == NULL) {return head;}
+	if (head == NULL) {return head;} // TODO: throw error?
 
 	node* temp = head;
 
@@ -168,6 +237,7 @@ node* NODE_remove(node* head, char* key) {
 
 }
 
+// print this and all following nodes in a linked list
 int NODE_printlist(node* head) {
 	if (head == NULL) {return 1;}
 
@@ -182,6 +252,7 @@ int NODE_printlist(node* head) {
 	return 0;
 }
 
+// free this node and all follwing it in linked list
 int NODE_freelist(node* head) {
 	node* temp;
 
