@@ -212,8 +212,7 @@ int main(int args, char* argv[]) {
 
 
 		default: {
-			printf("\033[91mInvalid test case: '%c'\033[0m\n", c);
-			printf("\n \033[90m====== TEST END ======\033[0m\n\n");
+			error("Invalid test case: '%c'\n", c);
 			return 1;
 		}
 	}

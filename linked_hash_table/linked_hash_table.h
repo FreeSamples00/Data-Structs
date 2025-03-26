@@ -13,6 +13,12 @@
 
 // ====== DATA STRUCTS ======
 
+/**
+ * @brief linked_node that golds record
+ * @param key key of record
+ * @param value value of record
+ * @param link the next node in linked list
+ */
 typedef struct keypair_node {
 
 	char key[MAX_KEY_LEN];
@@ -21,6 +27,13 @@ typedef struct keypair_node {
 
 } node;
 
+/**
+ * @brief structure that holds buckets and hashtable info
+ * @param max_buckes maximum number of buckets allowed (also the size of table array)
+ * @param used_buckets number of buckets with records stored in them
+ * @param records number of records stored in the whole struct
+ * @param table array of node pointers representing bucket data
+ */
 typedef struct hash_table {
 
 	int max_buckets;
@@ -32,32 +45,120 @@ typedef struct hash_table {
 } dict;
 
 
-// ====== DECLARATIONS ======
+// ============ DECLARATIONS ============
 
-void error(const char* message, ...);
-
-void HT_set(dict* ht, char* key, int value);
-void HT_remove(dict* ht, char* key);
-int HT_get(dict* ht, char* key);
-node** HT_getpecords(dict* ht);
-dict* HT_init(void);
-int HT_hash(char* key);
-void HT_free(dict* ht);
-int HT_contains(dict* ht, char* key);
-
-node* NODE_init(char* key, int value);
-node* NODE_append(node* head, node* end);
-node* NODE_remove(node* head, char* key);
-void NODE_printlist(node* head);
-void NODE_freelist(node* head);
-
-
-// ============ FUNCTIONS ============
+// ====== general ======
 
 /**
  * @brief prints error message and exits
  * @param message formatted er message
  */
+void error(const char* message, ...);
+
+
+// ====== hash table ======
+
+/**
+ * @brief set a key-value record
+ * @param ht hashtable to manipulate
+ * @param key key to insert
+ * @param value value to insert
+ * @return editied hashtable  
+ */
+void HT_set(dict* ht, char* key, int value);
+
+/**
+ * @brief removes a record from hashtable
+ * @param ht hashtable to edit
+ * @param key key of record to remove
+ * @return editied hashtable
+ */
+void HT_remove(dict* ht, char* key);
+
+/**
+ * @brief retrieves a stored value from a record
+ * @param ht hashtable to search
+ * @param key key to search for
+ * @return value from found record
+ */
+int HT_get(dict* ht, char* key);
+
+/**
+ * @brief gets an array of all records in hashtable, length found in ht struct
+ * @param ht hashtable to retrieve from
+ * @return array of node* for each record (length in ht.records)
+ */
+node** HT_getrecords(dict* ht);
+
+/**
+ * @brief initializes a new hashtable
+ * @return new hashtable 
+*/
+dict* HT_init(void);
+
+/**
+ * @brief hashes a key for internal use
+ * @param key key to hash
+ * @return hashed key
+ */
+int HT_hash(char* key);
+
+/**
+ * @brief frees hashtable and all nodes within
+ * @param ht hashtable to free
+ */
+void HT_free(dict* ht);
+
+/**
+ * @brief checks if a record is present in hashtable
+ * @param ht hashtable to serch
+ * @param key key to search for
+ * @return is record present (bool)
+ */
+int HT_contains(dict* ht, char* key);
+
+
+// ====== nodes ======
+
+/**
+ * @brief initializes a record node
+ * @param key key to store in record
+ * @param value value to store in record
+ * @return initialized record
+ */
+node* NODE_init(char* key, int value);
+
+/**
+ * @brief appends a record to a linked list of records
+ * @param head first record in linked list
+ * @param n node to append to end of list
+ * @return head of edited list
+ */
+node* NODE_append(node* head, node* end);
+
+/**
+ * @brief remove a record w/ passed key from record list
+ * @param head first record in linked list
+ * @param key key of record ot be removed
+ * @return head of edited list
+ */
+node* NODE_remove(node* head, char* key);
+
+/**
+ * @brief prints all records in a linked list
+ * @param head first record in list
+ */
+void NODE_printlist(node* head);
+
+/**
+ * @brief frees all records in linked list
+ * @param head first record in linked list
+ */
+void NODE_freelist(node* head);
+
+
+// ============ FUNCTIONS ============
+
 void error(const char* message, ...) {
 
 	fprintf(stderr, "\033[31mERROR: ");
@@ -73,10 +174,6 @@ void error(const char* message, ...) {
 
 // ====== hashtable methods ======
 
-/**
- * @brief initializes a new hashtable
- * @return new hashtable 
-*/
 dict* HT_init(void) {
 
 	dict* ht = (dict*)malloc(sizeof(dict));
@@ -92,13 +189,6 @@ dict* HT_init(void) {
 	return ht;
 }
 
-/**
- * @brief set a key-value record
- * @param ht hashtable to manipulate
- * @param key key to insert
- * @param value value to insert
- * @return editied hashtable  
- */
 void HT_set(dict* ht, char* key, int value) {
 	node* head;
 	node* temp;
@@ -134,12 +224,6 @@ void HT_set(dict* ht, char* key, int value) {
 	return;
 }
 
-/**
- * @brief removes a record from hashtable
- * @param ht hashtable to edit
- * @param key key of record to remove
- * @return editied hashtable
- */
 void HT_remove(dict* ht, char* key) {
 
 	int index = HT_hash(key);
@@ -149,12 +233,6 @@ void HT_remove(dict* ht, char* key) {
 	ht->records--;
 }
 
-/**
- * @brief retrieves a stored value from a record
- * @param ht hashtable to search
- * @param key key to search for
- * @return value from found record
- */
 int HT_get(dict* ht, char* key) {
 
 	// hash key
@@ -174,11 +252,6 @@ int HT_get(dict* ht, char* key) {
 	return -1;
 }
 
-/**
- * @brief hashes a key for internal use
- * @param key key to hash
- * @return hashed key
- */
 int HT_hash(char* key) {
 
 	unsigned long loc = 0;
@@ -190,11 +263,6 @@ int HT_hash(char* key) {
 	return loc % TABLE_SIZE;
 }
 
-/**
- * @brief gets an array of all records in hashtable, length found in ht struct
- * @param ht hashtable to retrieve from
- * @return array of node* for each record (length in ht.records)
- */
 node** HT_getrecords(dict* ht) {
 
 	node** arr_out = (node**)malloc((ht->records) * sizeof(node*));
@@ -213,12 +281,6 @@ node** HT_getrecords(dict* ht) {
 
 }
 
-/**
- * @brief checks if a record is present in hashtable
- * @param ht hashtable to serch
- * @param key key to search for
- * @return is record present (bool)
- */
 int HT_contains(dict* ht, char* key) {
 
 	// hash key
@@ -237,10 +299,6 @@ int HT_contains(dict* ht, char* key) {
 
 }
 
-/**
- * @brief frees hashtable and all nodes within
- * @param ht hashtable to free
- */
 void HT_free(dict* ht) {
 
 
@@ -257,12 +315,6 @@ void HT_free(dict* ht) {
 
 // ====== node methods ======
 
-/**
- * @brief initializes a record node
- * @param key key to store in record
- * @param value value to store in record
- * @return initialized record
- */
 node* NODE_init(char* key, int value) {
 
 	// create memory space for node
@@ -277,12 +329,6 @@ node* NODE_init(char* key, int value) {
 	return n;
 }
 
-/**
- * @brief appends a record to a linked list of records
- * @param head first record in linked list
- * @param n node to append to end of list
- * @return head of edited list
- */
 node* NODE_append(node* head, node* n) {
 
 	// if list is empty
@@ -301,12 +347,7 @@ node* NODE_append(node* head, node* n) {
 
 	return head;
 }
-/**
- * @brief remove a record w/ passed key from record list
- * @param head first record in linked list
- * @param key key of record ot be removed
- * @return head of edited list
- */
+
 node* NODE_remove(node* head, char* key) {
 
 	if (head == NULL) {error("node remove passed a NULL.");}
@@ -340,10 +381,6 @@ node* NODE_remove(node* head, char* key) {
 
 }
 
-/**
- * @brief prints all records in a linked list
- * @param head first record in list
- */
 void NODE_printlist(node* head) {
 	if (head == NULL) {return;}
 
@@ -357,10 +394,7 @@ void NODE_printlist(node* head) {
 	}
 }
 
-/**
- * @brief frees all records in linked list
- * @param head first record in linked list
- */
+
 void NODE_freelist(node* head) {
 	node* temp;
 
