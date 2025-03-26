@@ -193,32 +193,23 @@ int HT_hash(char* key) {
 /**
  * @brief gets an array of all records in hashtable
  * @param ht hashtable to retrieve from
- * @return array of node* for each record
+ * @return array of node* for each record (array is NULL terminated)
  */
 node** HT_getpairs(dict* ht) {
 
-	// FIXME: does not catch all records
-
-	// printf("sizeof node*: %d\n", sizeof(node*));
-	// printf("malloc size: %d\n", ht->records * sizeof(node*));
-
-
-	node** arr_out = (node**)malloc(ht->records * sizeof(node*));
+	node** arr_out = (node**)malloc((ht->records+1) * sizeof(node*));
 	if (arr_out == NULL) {error("Malloc denied while getting pairs");}
 
 	int arr_head = 0;
 	node* head;
 	for (int i=0; i<ht->max_buckets; i++) {
-		// if (ht->table[i] != NULL) {
-			//arr_out[arr_head++] = ht->table[i];
-			head = ht->table[i];
-			while (head != NULL) {
-				arr_out[arr_head++] = head;
-				head = head->link;
-			//}
+		head = ht->table[i];
+		while (head != NULL) {
+			arr_out[arr_head++] = head;
+			head = head->link;
 		}
 	}
-
+	arr_out[arr_head] = NULL;
 	return arr_out;
 
 }
@@ -276,7 +267,7 @@ void HT_free(dict* ht) {
 node* NODE_init(char* key, int value) {
 
 	// create memory space for node
-	node* n = malloc(sizeof(node));
+	node* n = (node*)malloc(sizeof(node));
 	if (n == NULL) {error("Malloc denied in node initilization");}
 
 	// store data in node
