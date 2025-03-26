@@ -34,6 +34,8 @@ typedef struct hash_table {
 
 // ====== DECLARATIONS ======
 
+void error(const char* message, ...);
+
 int HT_set(dict* ht, char* key, int value);
 int HT_remove(dict* ht, char* key);
 int HT_get(dict* ht, char* key);
