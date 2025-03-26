@@ -39,7 +39,7 @@ void error(const char* message, ...);
 void HT_set(dict* ht, char* key, int value);
 void HT_remove(dict* ht, char* key);
 int HT_get(dict* ht, char* key);
-node** HT_getpairs(dict* ht);
+node** HT_getpecords(dict* ht);
 dict* HT_init(void);
 int HT_hash(char* key);
 void HT_free(dict* ht);
@@ -191,13 +191,13 @@ int HT_hash(char* key) {
 }
 
 /**
- * @brief gets an array of all records in hashtable
+ * @brief gets an array of all records in hashtable, length found in ht struct
  * @param ht hashtable to retrieve from
- * @return array of node* for each record (array is NULL terminated)
+ * @return array of node* for each record (length in ht.records)
  */
-node** HT_getpairs(dict* ht) {
+node** HT_getrecords(dict* ht) {
 
-	node** arr_out = (node**)malloc((ht->records+1) * sizeof(node*));
+	node** arr_out = (node**)malloc((ht->records) * sizeof(node*));
 	if (arr_out == NULL) {error("Malloc denied while getting pairs");}
 
 	int arr_head = 0;
@@ -209,7 +209,6 @@ node** HT_getpairs(dict* ht) {
 			head = head->link;
 		}
 	}
-	arr_out[arr_head] = NULL;
 	return arr_out;
 
 }

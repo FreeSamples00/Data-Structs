@@ -169,7 +169,7 @@ int main(int args, char* argv[]) {
 			break;
 		}
 
-		case '5': { // print all pairs
+		case '5': { // print all records
 			char* keys[] = {"d", "dddddddddd>>", "abcd", "aoiwbcaw"};
 			int values[] = {1, 2, 3, 4};
 
@@ -185,11 +185,11 @@ int main(int args, char* argv[]) {
 			}
 			
 			printf("\n%d records in %d buckets\n", ht->records, ht->max_buckets);
-			node** all_records = HT_getpairs(ht);
+			node** all_records = HT_getrecords(ht);
 
 			printf("\n---------\n'key': value\n---------\n");
 
-			for (int i=0; all_records[i] != NULL; i++) {
+			for (int i=0; i<ht->records; i++) {
 				printf("'%s': %d\n", all_records[i]->key, all_records[i]->value);
 			}
 			printf("---------\n");
