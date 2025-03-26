@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 
 // ====== MACROS ======
@@ -22,8 +23,9 @@ typedef struct keypair_node {
 
 typedef struct hash_table {
 
-	int capacity;
-	int occupancy;
+	int max_buckets;
+	int used_buckets;
+	int records;
 
 	node* table[TABLE_SIZE];
 
@@ -35,47 +37,73 @@ typedef struct hash_table {
 int HT_set(dict* ht, char* key, int value);
 int HT_remove(dict* ht, char* key);
 int HT_get(dict* ht, char* key);
-node* HT_getpairs(dict* ht);
+node** HT_getpairs(dict* ht);
 dict* HT_init(void);
 int HT_hash(char* key);
-int HT_free(dict* ht);
+void HT_free(dict* ht);
+int HT_contains(dict* ht, char* key);
 
 node* NODE_init(char* key, int value);
 node* NODE_append(node* head, node* end);
 node* NODE_remove(node* head, char* key);
-int NODE_printlist(node* head);
+void NODE_printlist(node* head);
+void NODE_freelist(node* head);
 
 
 // ============ FUNCTIONS ============
 
+/**
+ * @brief prints error message and exits
+ * @param message formatted er message
+ */
+void error(const char* message, ...) {
+
+	fprintf(stderr, "\033[31mERROR: ");
+	va_list args;
+	va_start(args, message);
+	vfprintf(stderr, message, args);
+	va_end(args);
+	fprintf(stderr, "\033[0m\n\n");
+
+	exit(1);
+}
+
 
 // ====== hashtable methods ======
 
-// initialize hash table
+/**
+ * @brief initializes a new hashtable
+ * @return new hashtable 
+*/
 dict* HT_init(void) {
 
-	dict* ht = malloc(sizeof(dict));
-	if (ht == NULL) {exit(1);}
+	dict* ht = (dict*)malloc(sizeof(dict));
+	if (ht == NULL) {error("Malloc denied in hashtable initialization");}
 
 	for (int i=0; i<TABLE_SIZE; i++) {
 		ht->table[i] = NULL;
 	}
 
-	ht->capacity = TABLE_SIZE;
-	ht->occupancy = 0;
+	ht->max_buckets = TABLE_SIZE;
+	ht->records = 0;
 
 	return ht;
 }
 
-// set a key to a value in the hashtable
+/**
+ * @brief set a key-value record
+ * @param ht hashtable to manipulate
+ * @param key key to insert
+ * @param value value to insert
+ * @return editied hashtable  
+ */
 int HT_set(dict* ht, char* key, int value) {
 	node* head;
 	node* temp;
 
 	// handle key that's too long
 	if (strlen(key) > MAX_KEY_LEN) {
-		printf("\033[33mERROR: key too long.\n\tkey:  '%s'\n\tmax length: %d\033[0m\n", key, MAX_KEY_LEN);
-		exit(1);
+		error("key too long.\n\tkey: '%s'\n\tmax key length: %d", key, MAX_KEY_LEN);
 	}
 
 	// hash the key
@@ -87,7 +115,7 @@ int HT_set(dict* ht, char* key, int value) {
 		temp = head;
 		while (temp != NULL) {
 			
-			if (!strcmp(temp->key, key)) {
+			if (!strncmp(temp->key, key, MAX_KEY_LEN)) {
 				temp->value = value;
 				return 0;
 			}
@@ -99,19 +127,34 @@ int HT_set(dict* ht, char* key, int value) {
 	// append key-value pair to hashtable
 	temp = NODE_init(key, value);
 	ht->table[index] = NODE_append(head, temp);
+	ht->records++;
 
 	return 0;
 }
 
-// remove a key-value pair from hashtable
+/**
+ * @brief removes a record from hashtable
+ * @param ht hashtable to edit
+ * @param key key of record to remove
+ * @return editied hashtable
+ */
 int HT_remove(dict* ht, char* key) {
 
-	// TODO: remove key/value pair
+	int index = HT_hash(key);
+
+	NODE_remove(ht->table[index], key);
+
+	ht->records--;
 
 	return 0;
 }
 
-// retrieve a value from hashtable using key
+/**
+ * @brief retrieves a stored value from a record
+ * @param ht hashtable to search
+ * @param key key to search for
+ * @return value from found record
+ */
 int HT_get(dict* ht, char* key) {
 
 	// hash key
@@ -120,19 +163,22 @@ int HT_get(dict* ht, char* key) {
 	// find key in table to return
 	node* head = ht->table[index];
 	while (head != NULL) {
-		if (!strcmp(head->key, key)) {
+		if (!strncmp(head->key, key, MAX_KEY_LEN)) {
 			return head->value;
 		}
 		head = head->link;
 	}
 
 	// if not present, keyerror
-	printf("ERROR: key %s not found\n", key);
-	exit(1);
+	error("key '%s' not found.", key);
 	return -1;
 }
 
-// hash key into an index in the hashtable
+/**
+ * @brief hashes a key for internal use
+ * @param key key to hash
+ * @return hashed key
+ */
 int HT_hash(char* key) {
 
 	unsigned long loc = 0;
@@ -144,36 +190,94 @@ int HT_hash(char* key) {
 	return loc % TABLE_SIZE;
 }
 
-// gets a linked list of all data stored in hash table
-node* HT_getpairs(dict* ht) {
+/**
+ * @brief gets an array of all records in hashtable
+ * @param ht hashtable to retrieve from
+ * @return array of node* for each record
+ */
+node** HT_getpairs(dict* ht) {
 
-	/* TODO: 
-		- finds all stored key-value pairs
-		- strings themm together
-		- returns them as a linkedlist
-	*/
+	// FIXME: does not catch all records
 
-	return NULL;
+	// printf("sizeof node*: %d\n", sizeof(node*));
+	// printf("malloc size: %d\n", ht->records * sizeof(node*));
+
+
+	node** arr_out = (node**)malloc(ht->records * sizeof(node*));
+	if (arr_out == NULL) {error("Malloc denied while getting pairs");}
+
+	int arr_head = 0;
+	node* head;
+	for (int i=0; i<ht->max_buckets; i++) {
+		// if (ht->table[i] != NULL) {
+			//arr_out[arr_head++] = ht->table[i];
+			head = ht->table[i];
+			while (head != NULL) {
+				arr_out[arr_head++] = head;
+				head = head->link;
+			//}
+		}
+	}
+
+	return arr_out;
 
 }
 
-// free hashtable and its internal structs
-int HT_free(dict* ht) {
+/**
+ * @brief checks if a record is present in hashtable
+ * @param ht hashtable to serch
+ * @param key key to search for
+ * @return is record present (bool)
+ */
+int HT_contains(dict* ht, char* key) {
 
-	// TODO: free all linked lists, then free ht itself
+	// hash key
+	int index = HT_hash(key);
 
-	return 1;
+	// find key in table to return
+	node* head = ht->table[index];
+	while (head != NULL) {
+		if (!strncmp(head->key, key, MAX_KEY_LEN)) {
+			return 1;
+		}
+		head = head->link;
+	}
+
+	return 0;
+
+}
+
+/**
+ * @brief frees hashtable and all nodes within
+ * @param ht hashtable to free
+ */
+void HT_free(dict* ht) {
+
+
+	for (int i=0; i<ht->max_buckets; i++) {
+		if (ht->table[i] != NULL) {
+			NODE_freelist(ht->table[i]);
+		}
+	}
+
+	free(ht);
+
 }
 
 
 // ====== node methods ======
 
-// initalize linked node w/ key-value data
+/**
+ * @brief initializes a record node
+ * @param key key to store in record
+ * @param value value to store in record
+ * @return initialized record
+ */
 node* NODE_init(char* key, int value) {
 
 	// create memory space for node
 	node* n = malloc(sizeof(node));
-	if (n == NULL) {exit(1);}
+	if (n == NULL) {error("Malloc denied in node initilization");}
 
 	// store data in node
 	strncpy(n->key, key, strlen(key));
@@ -183,7 +287,12 @@ node* NODE_init(char* key, int value) {
 	return n;
 }
 
-// append node to a linked list
+/**
+ * @brief appends a record to a linked list of records
+ * @param head first record in linked list
+ * @param n node to append to end of list
+ * @return head of edited list
+ */
 node* NODE_append(node* head, node* n) {
 
 	// if list is empty
@@ -202,24 +311,28 @@ node* NODE_append(node* head, node* n) {
 
 	return head;
 }
-
-// remove node from a linked list
+/**
+ * @brief remove a record w/ passed key from record list
+ * @param head first record in linked list
+ * @param key key of record ot be removed
+ * @return head of edited list
+ */
 node* NODE_remove(node* head, char* key) {
 
-	if (head == NULL) {return head;} // TODO: throw error?
+	if (head == NULL) {error("node remove passed a NULL.");}
 
 	node* temp = head;
 
 	// key is head
-	if (!strcmp(temp->key, key)) {
+	if (!strncmp(temp->key, key, MAX_KEY_LEN)) {
 		head = temp->link;
 		free(temp);
 		return head;
 	}
 
 	// advance through list, exit on end
-	while (strcmp(temp->link->key, key)) {
-		if (temp->link == NULL) {return head;}
+	while (strncmp(temp->link->key, key, MAX_KEY_LEN)) {
+		if (temp->link == NULL) {error("key '%s' not found in nodelist.", key);}
 		temp = temp->link;
 	}
 
@@ -237,23 +350,28 @@ node* NODE_remove(node* head, char* key) {
 
 }
 
-// print this and all following nodes in a linked list
-int NODE_printlist(node* head) {
-	if (head == NULL) {return 1;}
+/**
+ * @brief prints all records in a linked list
+ * @param head first record in list
+ */
+void NODE_printlist(node* head) {
+	if (head == NULL) {return;}
 
-	printf("  key | value\n");
-	printf("------+--------\n");
+	printf("\n--------------\n");
+	printf("key: value\n");
+	printf("--------------\n");
 
 	while (head != NULL) {
-		printf(" %s | %d\n", head->key, head->value);
+		printf("'%s': %d\n", head->key, head->value);
 		head = head->link;
 	}
-
-	return 0;
 }
 
-// free this node and all follwing it in linked list
-int NODE_freelist(node* head) {
+/**
+ * @brief frees all records in linked list
+ * @param head first record in linked list
+ */
+void NODE_freelist(node* head) {
 	node* temp;
 
 	while (head != NULL) {
@@ -261,8 +379,6 @@ int NODE_freelist(node* head) {
 		head = head->link;
 		free(temp);
 	}
-	free(head);
-
-	return 1;
+	if (head != NULL) {free(head);}
 }
 
