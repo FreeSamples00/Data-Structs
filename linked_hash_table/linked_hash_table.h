@@ -36,8 +36,8 @@ typedef struct hash_table {
 
 void error(const char* message, ...);
 
-int HT_set(dict* ht, char* key, int value);
-int HT_remove(dict* ht, char* key);
+void HT_set(dict* ht, char* key, int value);
+void HT_remove(dict* ht, char* key);
 int HT_get(dict* ht, char* key);
 node** HT_getpairs(dict* ht);
 dict* HT_init(void);
@@ -99,7 +99,7 @@ dict* HT_init(void) {
  * @param value value to insert
  * @return editied hashtable  
  */
-int HT_set(dict* ht, char* key, int value) {
+void HT_set(dict* ht, char* key, int value) {
 	node* head;
 	node* temp;
 
@@ -119,7 +119,7 @@ int HT_set(dict* ht, char* key, int value) {
 			
 			if (!strncmp(temp->key, key, MAX_KEY_LEN)) {
 				temp->value = value;
-				return 0;
+				return;
 			}
 
 			temp = temp->link;
@@ -131,7 +131,7 @@ int HT_set(dict* ht, char* key, int value) {
 	ht->table[index] = NODE_append(head, temp);
 	ht->records++;
 
-	return 0;
+	return;
 }
 
 /**
@@ -140,15 +140,13 @@ int HT_set(dict* ht, char* key, int value) {
  * @param key key of record to remove
  * @return editied hashtable
  */
-int HT_remove(dict* ht, char* key) {
+void HT_remove(dict* ht, char* key) {
 
 	int index = HT_hash(key);
 
 	NODE_remove(ht->table[index], key);
 
 	ht->records--;
-
-	return 0;
 }
 
 /**
