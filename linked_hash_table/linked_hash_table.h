@@ -260,6 +260,8 @@ int HT_hash(char* key) {
 		loc += (unsigned int) key[i];
 	}
 
+	loc = loc * loc * loc;
+
 	return loc % TABLE_SIZE;
 }
 
@@ -322,7 +324,12 @@ node* NODE_init(char* key, int value) {
 	if (n == NULL) {error("Malloc denied in node initilization");}
 
 	// store data in node
-	strncpy(n->key, key, strlen(key));
+	if (strlen(key) < MAX_KEY_LEN) {
+		strncpy(n->key, key, strlen(key));
+	} else {
+		strncpy(n->key, key, MAX_KEY_LEN);
+	}
+	
 	n->value = value;
 	n->link = NULL;
 
