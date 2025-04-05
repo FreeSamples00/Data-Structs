@@ -10,7 +10,6 @@ int main(int args, char* argv[]) {
 	} else {
 	
 		printf("Test cases:\n");
-		printf("\t0. Linked list\n");
 		printf("\t1. Hash table set + contains\n");
 		printf("\t2. Hash table set + retrieve\n");
 		printf("\t3. Hash table set + remove + retrieve\n");
@@ -24,36 +23,6 @@ int main(int args, char* argv[]) {
 
 	printf("\n \033[90m====== TEST BEGIN ======\033[0m\n\n");
 	switch(c) {
-		case '0': { // linked list
-
-			node* head = NULL;
-			char* keys[] = {"key0", "key1", "key2", "key3"};
-			int values[] = {0, 1, 2, 3};
-			
-			// appends
-			for (int i=0; i<4; i++) {
-				head = NODE_append(head, NODE_init(keys[i], values[i]));
-			}
-
-			// print list
-			printf("Appends Completed:\n\n");
-			NODE_printlist(head);
-
-			// removes
-			for (int i=0; i<4; i+=2) {
-				head = NODE_remove(head, keys[i]);
-			}
-
-			// print list
-			printf("\nRemoves Completed:\n\n");
-			NODE_printlist(head);
-
-			// free list
-			printf("\nFreeing List\n");
-			NODE_freelist(head);
-
-			break;
-		}
 
 		case '1': {
 			char* keys[] = {"key1", "key2"};
@@ -212,7 +181,7 @@ int main(int args, char* argv[]) {
 
 
 		default: {
-			error("Invalid test case: '%c'\n", c);
+			printf("\033[91mERROR: Invalid test case: '%c'\n", c);
 			return 1;
 		}
 	}
