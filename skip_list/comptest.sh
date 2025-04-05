@@ -1,9 +1,9 @@
 clear
 
-rm -f test.out
+rm ./bin/*
 
-echo "\033[33m===== Compiling testcases.c =====\033[0m\n"
-gcc -Wall -o test.out testcases.c
+echo "\033[33m===== Compiling =====\033[0m\n"
+gcc -Wall -o ./bin/test.out ./src/skip_list.c ./src/testcases.c
 
 if [[ "$?" != 0 ]]; then
 	echo
