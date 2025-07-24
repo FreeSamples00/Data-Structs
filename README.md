@@ -35,35 +35,13 @@ When a duplicate key is set, the value is replaced.
     - frees hash table and all records within
 
 
-
-## Linear Hash Table *planned*
-
-A hash table that stores key-value records
-
-- **key**: a string (`char*`)
-- **value**: an `int`
-
-
-
-Hash collisions are handled via the linear splitting method.
-
-When a duplicate key is set, the value is replaced.
-
-
-
-### Methods
-
-…
-
-
-
 ## Skip List *planned*
 
 A skip list with a variable number of express lists.
 
 Added nodes are elevated to express nodes based on random chance.
 
-Duplicate keys are replcaed
+Duplicate keys are replaced
 
 
 
