@@ -1,14 +1,9 @@
 #ifndef SKIP_LIST_H
 #define SKIP_LIST_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
 // ============ MACROS ============
 
-#define NUM_LEVELS 3
+//#define NUM_LEVELS 3
 #define MAX_KEY_LEN 50
 #define EXPR_CHANCE 0.2
 
@@ -39,8 +34,9 @@ typedef struct linked_node {
  */
 typedef struct skip_list {
 
-	node* levels[NUM_LEVELS];
+	int NUM_LEVELS;
 	int records;
+	node* levels[];
 
 } sk_lst;
 
@@ -50,7 +46,7 @@ typedef struct skip_list {
  * @brief initializes new skip list
  * @return point to new skip list
  */
-sk_lst* SK_init(void);
+sk_lst* SK_init(int num_levels);
 
 /**
  * @brief changes or creates a record with key-value pair

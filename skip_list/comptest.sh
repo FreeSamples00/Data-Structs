@@ -13,6 +13,6 @@ fi
 echo "\033[92mCompiled Successfully\033[0m\n"
 
 if [[ "$1" != "" ]]; then
-	echo "\033[33m===== Executing '\033[31m./test.out $1\033[33m' =====\033[0m\n"
-	./test.out $1
+	echo "\033[33m===== Executing '\033[31m./bin/test.out $1\033[33m' =====\033[0m\n"
+	./bin/test.out $1
 fi
